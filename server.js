@@ -26,12 +26,12 @@ const PostDataToHydroCloud = async (req, res) => {
 	axios.defaults.headers["X-Id-Token"] = req.body.token;
 
 	if (req.body.restType === "POST") {
+		console.log(url);
 		try {
 			const response = await axios.post(url, req.body.data);
 			if (req.body.url.includes("/user/login")) {
 				let responseData = response.data.id_token;
-				let responseRole = response.data.hmi_privileges.role;
-				res.status(200).send({ responseData, responseRole });
+				res.status(200).send({ responseData });
 			} else {
 				res.status(200).send(response.data);
 			}
@@ -41,10 +41,9 @@ const PostDataToHydroCloud = async (req, res) => {
 			res.status(404).send(err);
 		}
 	} else if (req.body.restType === "GET") {
-		// axios.defaults.headers["X-Id-Token"] = req.body.token;
-		// console.log(axios.defaults);
+		console.log(url);
 		try {
-			const response = await axios.get(req.body.url);
+			const response = await axios.get(url);
 			res.status(200).send(response.data);
 		} catch (err) {
 			console.log("-----------------------------------------");
@@ -53,46 +52,44 @@ const PostDataToHydroCloud = async (req, res) => {
 		}
 	} else if (req.body.restType === "DELETE") {
 		try {
+			console.log(url);
 			const response = await axios.delete(url);
 			res.status(200).send();
 		} catch (err) {
 			console.log("-------------");
 			console.log(err);
 		}
+	} else if (req.body.restType === "PATCH") {
+		console.log("..........");
+		console.log(req.headers["x-id-token"]);
+
+		console.log("..........");
+		try {
+			console.log(url);
+			const response = await axios.patch(url, req.body.data);
+			console.log(response);
+			res.status(200).send();
+		} catch (err) {
+			console.log("---------");
+			console.log(err);
+		}
+	} else if (req.body.restType === "PUT") {
+		try {
+			console.log(url);
+			const response = await axios.put(url);
+			res.status(200).send(response);
+		} catch (err) {
+			console.log("-----------");
+			console.log(err);
+		}
 	}
 };
 
-//Admin - Organisations
-app.get("/v1/organisation");
-
-app.post("/v1/organisation/link");
-
-app.delete("/v1/organisation/link");
-
-//Admin - Users
-app.post("/v1/user/");
-
-app.patch("/v1/user/modify");
-
-app.get("/v1/user/:userId");
-
-app.delete("/v1/user/:userId");
-
-app.get("/v1/users/");
-
-//SuperUser - Organisations
-app.post("/v1/admin/organisation");
-
-app.delete("/v1/admin/organisation/delete/:organisationId");
-
 app.post("/api", PostDataToHydroCloud);
-
-app.get("/", (req, res) => {
-	res.send("Hello World!");
-});
 
 /*------------------------------------------------------------ */
 http.listen(port, () => console.log(`Server listening on port ${port}!`));
+console.clear();
 
 /*----------------ERROR-HANDLING----------------------*/
 
