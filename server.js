@@ -14,78 +14,213 @@ app.use(cors());
 
 app.use(express.json({ limit: "100mb" }));
 
-const PostDataToHydroCloud = async (req, res) => {
-	let url = "";
+// app.post("/api", PostDataToHydroCloud);
 
-	if (req.body.requestParameter) {
-		url = req.body.url + "/" + req.body.requestParameterValue;
-	} else {
-		url = req.body.url;
+//Routes for Organisation API's
+app.get(`/organisation/v1/admin/organisation`, async (req, res) => {
+	try {
+		const url = `https://dev.cloud.hydroware.com/organisation/v1/admin/organisation`;
+		const response = await axios.get(url, {
+			headers: {
+				"X-Id-Token": req.headers["x-id-token"],
+			},
+		});
+
+		res.status(response.status).send(response.data);
+	} catch (err) {
+		console.log(err);
 	}
+});
 
-	axios.defaults.headers["X-Id-Token"] = req.body.token;
+app.delete(`/organisation/v1/admin/delete/:organisation`, async (req, res) => {
+	try {
+		const url = `https://dev.cloud.hydroware.com/organisation/v1/admin/delete/${req.params.organisation}`;
+		const response = await axios.delete(url, req.body, {
+			headers: {
+				"X-Id-Token": req.headers["x-id-token"],
+			},
+		});
 
-	if (req.body.restType === "POST") {
-		console.log(url);
-		try {
-			const response = await axios.post(url, req.body.data);
-			if (req.body.url.includes("/user/login")) {
-				let responseData = response.data.id_token;
-				res.status(200).send({ responseData });
-			} else {
-				res.status(200).send(response.data);
-			}
-		} catch (err) {
-			console.log("----------------------------------------");
-			console.log(err.response.data);
-			res.status(404).send(err);
-		}
-	} else if (req.body.restType === "GET") {
-		console.log(url);
-		try {
-			const response = await axios.get(url);
-			res.status(200).send(response.data);
-		} catch (err) {
-			console.log("-----------------------------------------");
-			console.log(err);
-			res.status(500).send(err);
-		}
-	} else if (req.body.restType === "DELETE") {
-		try {
-			console.log(url);
-			const response = await axios.delete(url);
-			res.status(200).send();
-		} catch (err) {
-			console.log("-------------");
-			console.log(err);
-		}
-	} else if (req.body.restType === "PATCH") {
-		console.log("..........");
-		console.log(req.headers["x-id-token"]);
+		res.status(response.status).send("Organisation has been deleted");
+	} catch (err) {
+		console.log(err);
+	}
+});
 
-		console.log("..........");
+app.post(
+	`/organisation/v1/admin/organisation/create/organisation`,
+	async (req, res) => {
 		try {
-			console.log(url);
-			const response = await axios.patch(url, req.body.data);
-			console.log(response);
-			res.status(200).send();
+			const url = `https://dev.cloud.hydroware.com/organisation/v1/admin/organisation`;
+			const response = await axios.post(url, req.body, {
+				headers: {
+					"X-Id-Token": req.headers["x-id-token"],
+				},
+			});
+
+			res.status(response.status).send("Organisation has been created");
 		} catch (err) {
-			console.log("---------");
-			console.log(err);
-		}
-	} else if (req.body.restType === "PUT") {
-		try {
-			console.log(url);
-			const response = await axios.put(url);
-			res.status(200).send(response);
-		} catch (err) {
-			console.log("-----------");
-			console.log(err);
+			console.log(err.message);
 		}
 	}
-};
+);
 
-app.post("/api", PostDataToHydroCloud);
+//Routes for user API's
+
+app.post(`/auth/v1/user/login`, async (req, res) => {
+	try {
+		const url = `https://dev.cloud.hydroware.com/auth/v1/user/login`;
+		const response = await axios.post(url, req.body);
+		let responseData = response.data.id_token;
+
+		res.status(response.status).send(responseData);
+	} catch (err) {
+		console.log(err);
+	}
+});
+
+app.get(`/user/v1/admin/users/:organisation`, async (req, res) => {
+	try {
+		const url = `https://dev.cloud.hydroware.com/user/v1/admin/users/${req.params.organisation}`;
+
+		const response = await axios.get(url, {
+			headers: {
+				"X-Id-Token": req.headers["x-id-token"],
+			},
+		});
+
+		res.status(response.status).send(response.data);
+	} catch (err) {
+		console.log(err.message);
+	}
+});
+
+app.get(`/user/v1/admin/user/:organisation/:email`, async (req, res) => {
+	try {
+		const url = `https://dev.cloud.hydroware.com/user/v1/admin/user/${req.params.organisation}/${req.params.email}`;
+
+		const response = await axios.get(url, {
+			headers: {
+				"X-Id-Token": req.headers["x-id-token"],
+			},
+		});
+		res.status(response.status).send(response.data);
+	} catch (err) {
+		console.log(err.message);
+	}
+});
+
+app.post(`/user/v1/admin/user/:organisation`, async (req, res) => {
+	console.log(req.body);
+	try {
+		const url = `https://dev.cloud.hydroware.com/user/v1/admin/user/${req.params.organisation}`;
+
+		const response = await axios.post(url, req.body, {
+			headers: {
+				"X-Id-Token": req.headers["x-id-token"],
+			},
+		});
+
+		res.status(response.status).send("Successfully created");
+	} catch (err) {
+		console.log(err);
+	}
+});
+
+app.patch(`/user/v1/admin/user/modify/:organisation`, async (req, res) => {
+	try {
+		const url = `https://dev.cloud.hydroware.com/user/v1/admin/user/modify/${req.params.organisation}`;
+
+		const response = await axios.patch(url, req.body, {
+			headers: {
+				"X-Id-Token": req.headers["x-id-token"],
+			},
+		});
+
+		res.status(response.status).send("Successfull updated user");
+	} catch (err) {
+		console.log(err.message);
+	}
+});
+
+app.put(
+	`/user/v1/admin/user/resetPassword/:organisation/:email`,
+	async (req, res) => {
+		try {
+			const url = `https://dev.cloud.hydroware.com/user/v1/admin/user/resetPassword/${req.params.organisation}/${req.params.email}`;
+
+			const response = await axios.put(url, req.body, {
+				headers: {
+					"X-Id-Token": req.headers["x-id-token"],
+				},
+			});
+
+			res.status(response.status).send("Password has been reset");
+		} catch (err) {
+			console.log(err.message);
+		}
+	}
+);
+
+app.delete(`/user/v1/admin/user/:organisation/:email`, async (req, res) => {
+	try {
+		const url = `https://dev.cloud.hydroware.com/user/v1/admin/user/${req.params.organisation}/${req.params.email}`;
+
+		const response = await axios.delete(url, {
+			headers: {
+				"X-Id-Token": req.headers["x-id-token"],
+			},
+		});
+
+		res.status(response.status).send("User has been deleted");
+	} catch (err) {
+		console.log(err.message);
+	}
+});
+
+//Routes for "admin"-role users
+
+app.get(`/user/v1/users`, async (req, res) => {
+	try {
+		const url = `https://dev.cloud.hydroware.com/user/v1/users`;
+		const response = await axios.get(url, {
+			headers: {
+				"X-Id-Token": req.headers["x-id-token"],
+			},
+		});
+		res.status(response.status).send(response.data);
+	} catch (err) {
+		console.log(err.message);
+	}
+});
+
+app.post(`/user/v1/user/`, async (req, res) => {
+	try {
+		const url = `https://dev.cloud.hydroware.com/user/v1/user/`;
+		const response = await axios.post(url, req.body, {
+			headers: {
+				"X-Id-Token": req.headers["x-id-token"],
+			},
+		});
+		res.status(response.status).send(response.data);
+	} catch (err) {
+		console.log(err.message);
+	}
+});
+
+app.delete(`/user/v1/user/:user`, async (req, res) => {
+	try {
+		const url = `https://dev.cloud.hydroware.com/user/v1/user/${req.params.user}`;
+		const response = await axios.delete(url, {
+			headers: {
+				"X-Id-Token": req.headers["x-id-token"],
+			},
+		});
+		res.status(response.status).send("User has been removed");
+	} catch (err) {
+		console.log(err.message);
+	}
+});
 
 /*------------------------------------------------------------ */
 http.listen(port, () => console.log(`Server listening on port ${port}!`));
