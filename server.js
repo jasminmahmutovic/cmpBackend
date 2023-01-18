@@ -71,9 +71,10 @@ app.post(`/auth/v1/user/login`, async (req, res) => {
 	try {
 		const url = `https://dev.cloud.hydroware.com/auth/v1/user/login`;
 		const response = await axios.post(url, req.body);
-		let responseData = response.data.id_token;
+		let responseData = response.data;
 
 		res.status(response.status).send(responseData);
+		console.log(res);
 	} catch (err) {
 		console.log(err);
 	}
